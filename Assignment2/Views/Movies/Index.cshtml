@@ -1,0 +1,21 @@
+﻿@{
+    ViewBag.Title = "Index Page";
+}
+
+@using WebMatrix.Data
+
+@{
+    var db = Database.Open("dvdRental");
+    var sql = "SELECT * FROM movies";
+
+    var data = db.Query(sql);
+}
+
+<h2 class="">Index</h2>
+
+@foreach (var row in data)
+{
+    <h3>@row.title</h3>
+    <img src="@row.poster_filename" alt="@row.title image">
+    <a href="/Movies/Details?id=@row.movie_id">View Movie</a>
+}
