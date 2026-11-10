@@ -28,7 +28,7 @@
         foreach (var row in searchMovies)
         {
             <div class="card col-3 m-1">
-                <img src="@row.poster_filename" class="card-img-top" alt="@row.title">
+                <img src="/Images/@row.poster_filename" class="card-img-top" alt="@row.title">
                 <div class="card-body">
                     <h5 class="card-title text-center">@row.title</h5>
                     <p class="card-subtitle text-end">@row.release_year</p>
