@@ -8,19 +8,47 @@
     var db = Database.Open("dvdRental");
 
     var sqlSearchMovie = "SELECT * " +
-                         "FROM movies " +
-                         "WHERE CAST(@0 AS TEXT) is null " +
-                         "OR title ILIKE '%' || CAST(@0 AS TEXT) || '%'";
+                         "FROM movies m " +
+                         "WHERE ( " +
+                         "CAST(@0 AS TEXT) is null " +
+                         "OR title ILIKE '%' || CAST(@0 AS TEXT) || '%' " +
+                         ") " +
+                         "AND ( " +
+                         "CAST (@1 AS INTEGER) is null " +
+                         "OR EXISTS ( " +
+                         "SELECT * " +
+                         "FROM movie_genres mg " +
+                         "WHERE mg.movie_id = m.movie_id " +
+                         "AND mg.genre_id = CAST (@1 AS INTEGER) )) ";
+    
+    var sqlGenres = "SELECT genre_id, genre_name " +
+                    "FROM genres " +
+                    "ORDER BY genre_name";
+    
     var searchRequestText = Request.QueryString["searchTitle"];
-    var searchMovies = db.Query(sqlSearchMovie, searchRequestText);
+    var genres = db.Query(sqlGenres);
+    var searchRequestGenre = Request.QueryString["searchGenre"];
+    
+    var searchMovies = db.Query(sqlSearchMovie, searchRequestText, searchRequestGenre);
+    
+
 
 }
 
 <h2 class="">Index</h2>
 
 <form method="get" action="/Movies/Index">
-    <input type="text" name="searchTitle" />
-    <button type="submit">Search</button>
+    <input type="text" name="searchTitle" value="@searchRequestText" class="form-control"/>
+    <select name="searchGenre" class="form-select">
+        <option value="">All Genres</option>
+        @foreach (var genre in genres)
+        {
+            <option value="@genre.genre_id" selected="@(searchRequestGenre == genre.genre_id.ToString())">
+                @genre.genre_name
+            </option>
+        }
+    </select>
+    <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
 <div class="row justify-content-center">
