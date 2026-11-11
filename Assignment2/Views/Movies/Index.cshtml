@@ -82,7 +82,7 @@
                 <option value="">All Actors</option>
                 @foreach (var actor in actors)
                 {
-                    var actorName = "" +@actor.first_name + " " + @actor.last_name;
+                    var actorName = @actor.first_name + " " + @actor.last_name;
                     <option value="@actor.actor_id" selected="@(searchRequestActor == actor.actor_id.ToString())">
                         @actorName
                     </option>
@@ -124,4 +124,9 @@
     }
 </div>
 
-    
+@if (searchMovies.Count() == 0)
+{
+    <div class="alert alert-warning mt-2">
+        No movies found with search criteria. Please update search and try again!
+    </div>
+}
