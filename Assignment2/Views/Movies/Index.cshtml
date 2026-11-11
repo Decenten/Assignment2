@@ -22,17 +22,22 @@
                          "SELECT * " +
                          "FROM movie_genres mg " +
                          "WHERE mg.movie_id = m.movie_id " +
-                         "AND mg.genre_id = CAST (@1 AS INTEGER) )) ";
+                         "AND mg.genre_id = CAST (@1 AS INTEGER) )) " +
+                         "ORDER BY " +
+                         "CASE WHEN @2 = 'DESC' THEN title END DESC, " +
+                         "CASE WHEN @2 IS NULL OR @2 = 'ASC' THEN title END ASC";
     
     var sqlGenres = "SELECT genre_id, genre_name " +
                     "FROM genres " +
                     "ORDER BY genre_name";
     
+    
     var searchRequestText = Request.QueryString["searchTitle"];
     var genres = db.Query(sqlGenres);
     var searchRequestGenre = Request.QueryString["searchGenre"];
+    var searchSort = Request.QueryString["searchSort"];
     
-    var searchMovies = db.Query(sqlSearchMovie, searchRequestText, searchRequestGenre);
+    var searchMovies = db.Query(sqlSearchMovie, searchRequestText, searchRequestGenre, searchSort);
     
 
 
@@ -41,7 +46,7 @@
 <h1 class="text-center">Movie Index</h1>
 
 <form method="get" action="/Movies/Index">
-    <div class="row g-2 align-items-end">
+    <div class="row align-items-end">
         <div class="col-md-5">
             <input type="text" name="searchTitle" value="@searchRequestText" class="form-control" placeholder="Search for a movie"/>
         </div>
@@ -60,6 +65,17 @@
         
         <div class="col-md-2">
             <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+        
+        <div class="col-md-1">
+            @if (searchSort == "DESC")
+            {
+                <button type="submit" name="searchSort" value="ASC" class="btn btn-primary">Sort Title A-Z</button>
+            }
+            else
+            {
+                <button type="submit" name="searchSort" value="DESC" class="btn btn-primary">Sort Title Z-A</button>
+            }
         </div>
         
     </div>
