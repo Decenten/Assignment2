@@ -1,5 +1,94 @@
-﻿@{
+﻿@using WebMatrix.Data
+
+@{
     ViewBag.Title = "Details Page";
 }
 
-<h2>Details</h2>
+@{
+    var db = Database.Open("dvdRental");
+
+    var sql = "SELECT * FROM movies WHERE movie_id = CAST(@0 AS INT)";
+    var queryMovieID = Request.QueryString["id"];
+    var movie = db.QuerySingle(sql, queryMovieID);
+    
+    
+    var sqlMovieActors = "SELECT * " +
+                         "FROM actors a, movie_actors ma " +
+                         "WHERE ma.movie_ID = CAST(@0 AS INT) " +
+                         "AND a.actor_id = ma.actor_id";
+    var actors = db.Query(sqlMovieActors, queryMovieID);
+    
+    var sqlMovieGenres = "SELECT * " +
+                         "FROM genres g, movie_genres ma " +
+                         "WHERE ma.movie_ID = CAST(@0 AS INT) " +
+                         "AND g.genre_id = ma.genre_id";
+    var genres = db.Query(sqlMovieGenres, queryMovieID);
+    
+    
+}
+
+@if (movie == null){
+    <div class="alert alert-danger">
+        Movie not found
+    </div>
+} else {
+    <div class="row g-4">
+        <div class="col-md-4">
+            <img src="/Images/@movie.poster_filename" class="img-fluid" alt="@movie.title">
+        </div>
+        
+        <div class="col-md-8">
+            <h1 class="text-center mb-2">@movie.title</h1>
+            
+            <p class="fs-5 fst-italic text-secondary text-center mb-2">Runtime: @movie.runtime_minutes mins &bull; Classification: @movie.classification &bull; Release Year:@movie.release_year</p>
+            
+            <div class="fst-italic text-secondary text-center mb-2">
+                @{
+                    int countGenre = 0;
+                }
+                
+                @foreach (var genre in genres)
+                {
+                    if (countGenre > 0)
+                    {
+                        <span>&bull;</span>
+                    }
+                    
+                    <span>
+                        @genre.genre_name
+                    </span>
+
+                    countGenre++;
+                }
+            </div>
+            
+            <div class="fst-italic text-secondary text-center mb-5">
+                @{
+                    int countActor = 0;
+                }
+                
+                @foreach (var actor in actors)
+                {
+                    if (countActor > 0)
+                    {
+                        <span>&bull;</span>
+                    }
+                    
+                    <span>
+                        @actor.first_name @actor.last_name (@actor.date_of_birth.ToString("dd/MM/yyyy"))
+                    </span>
+                    
+                    countActor++;
+                }
+            </div>
+            
+            <p class="mb-5">@movie.description</p>
+            
+            <div class="text-end">
+                <p class="fs-5 fst-italic text-end">Rental price: @movie.rental_price.ToString("C")</p>
+            </div>
+            
+            <a class="btn align-content-end btn-outline-primary" href="/Movies/Index">Return to Index</a>
+        </div>
+    </div>
+}
