@@ -23,8 +23,24 @@
                          "WHERE ma.movie_ID = CAST(@0 AS INT) " +
                          "AND g.genre_id = ma.genre_id";
     var genres = db.Query(sqlMovieGenres, queryMovieID);
+
+    var sqlMovieCopies = "SELECT * " +
+                         "FROM copies c " +
+                         "JOIN stores s " +
+                         "ON c.store_id = s.store_id " +
+                         "LEFT JOIN rental_items ri " +
+                         "ON c.copy_id = ri.copy_id " +
+                         "WHERE c.movie_ID = CAST(@0 AS INT)";
+var movieCopies = db.Query(sqlMovieCopies, queryMovieID);
+var copiesAval = 0;
+foreach (var copy in movieCopies)
+{
+    if (copy.rental_id == null || (copy.rental_id != null && copy.return_date == null))
+    {
+        copiesAval++;
+    }
     
-    
+}
 }
 
 @if (movie == null){
@@ -86,6 +102,34 @@
             
             <div class="text-end">
                 <p class="fs-5 fst-italic text-end">Rental price: @movie.rental_price.ToString("C")</p>
+            </div>
+            
+            <div>
+                <p class="mb-2 text-center">Copy Locations</p>
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>Store</th>
+                        <th>Store Address</th>
+                        <th>Store Phone #</th>
+                        <th>Copies</th>
+                        <th>Copies Available</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    @foreach (var copy in movieCopies)
+                    {
+                        <tr>
+                            <td>@copy.store_name</td>
+                            <td>@copy.street_address @copy.suburb @copy.postcode</td>
+                            <td>@copy.phone</td>
+                            <td>@movieCopies.Count()</td>
+                            <td>@copiesAval</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
             </div>
             
             <a class="btn align-content-end btn-outline-primary" href="/Movies/Index">Return to Index</a>
