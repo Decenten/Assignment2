@@ -10,37 +10,39 @@
     var sql = "SELECT * FROM movies WHERE movie_id = CAST(@0 AS INT)";
     var queryMovieID = Request.QueryString["id"];
     var movie = db.QuerySingle(sql, queryMovieID);
-    
-    
+
+
     var sqlMovieActors = "SELECT * " +
                          "FROM actors a, movie_actors ma " +
                          "WHERE ma.movie_ID = CAST(@0 AS INT) " +
                          "AND a.actor_id = ma.actor_id";
     var actors = db.Query(sqlMovieActors, queryMovieID);
-    
+
     var sqlMovieGenres = "SELECT * " +
                          "FROM genres g, movie_genres ma " +
                          "WHERE ma.movie_ID = CAST(@0 AS INT) " +
                          "AND g.genre_id = ma.genre_id";
     var genres = db.Query(sqlMovieGenres, queryMovieID);
 
-    var sqlMovieCopies = "SELECT * " +
+    var sqlMovieStores = "SELECT s.store_id, s.store_name, s.street_address, s.suburb, s.postcode, s.phone, " +
+                         "COUNT(DISTINCT c.copy_id) FILTER (" +
+                         "WHERE c.retired = false" +
+                         ") AS total_copies, " +
+                         "COUNT(DISTINCT c.copy_ID) FILTER ( " +
+                         "WHERE c.retired = false " +
+                         "AND NOT EXISTS ( " +
+                         "SELECT 1 " +
+                         "FROM rental_items ri " +
+                         "WHERE ri.copy_id = c.copy_id " +
+                         "AND ri.return_date IS NULL ) " +
+                         ") AS available_copies " +
                          "FROM copies c " +
                          "JOIN stores s " +
                          "ON c.store_id = s.store_id " +
-                         "LEFT JOIN rental_items ri " +
-                         "ON c.copy_id = ri.copy_id " +
-                         "WHERE c.movie_ID = CAST(@0 AS INT)";
-var movieCopies = db.Query(sqlMovieCopies, queryMovieID);
-var copiesAval = 0;
-foreach (var copy in movieCopies)
-{
-    if (copy.rental_id == null || (copy.rental_id != null && copy.return_date == null))
-    {
-        copiesAval++;
-    }
-    
-}
+                         "WHERE c.movie_id = CAST(@0 AS INT) " +
+                         "GROUP BY s.store_id, s.store_name, s.street_address, s.suburb, s.postcode, s.phone " +
+                         "ORDER BY s.store_name";
+    var movieCopies = db.Query(sqlMovieStores, queryMovieID);
 }
 
 @if (movie == null){
@@ -124,8 +126,8 @@ foreach (var copy in movieCopies)
                             <td>@copy.store_name</td>
                             <td>@copy.street_address @copy.suburb @copy.postcode</td>
                             <td>@copy.phone</td>
-                            <td>@movieCopies.Count()</td>
-                            <td>@copiesAval</td>
+                            <td>@copy.total_copies</td>
+                            <td>@copy.available_copies</td>
                         </tr>
                     }
                     </tbody>
