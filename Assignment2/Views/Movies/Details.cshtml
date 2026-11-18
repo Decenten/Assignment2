@@ -36,7 +36,7 @@
 
             var sqlMovieStores = "SELECT s.store_id, s.store_name, s.street_address, s.suburb, s.postcode, s.phone, " +
                                  "COUNT(DISTINCT c.copy_id) FILTER (" +
-                                 "WHERE c.retired = false" +
+                                 "WHERE c.retired = false " +
                                  ") AS total_copies, " +
                                  "COUNT(DISTINCT c.copy_ID) FILTER ( " +
                                  "WHERE c.retired = false " +
