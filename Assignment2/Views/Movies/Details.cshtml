@@ -134,36 +134,24 @@ else
             <div class="text-end">
                 <p class="fs-5 fst-italic text-end">Rental price: @movie.rental_price.ToString("C")</p>
             </div>
-            
-            <div>
-                <p class="mb-2 text-center">Copy Locations</p>
-                <table class="table table-striped table-hover">
-                    <thead>
-                    <tr>
-                        <th>Store</th>
-                        <th>Store Address</th>
-                        <th>Store Phone #</th>
-                        <th>Copies</th>
-                        <th>Copies Available</th>
-                    </tr>
-                    </thead>
+        </div>
+        <p class="mb-2 text-center">Copy Locations</p>
 
-                    <tbody>
-                    @foreach (var copy in movieCopies)
-                    {
-                        <tr>
-                            <td>@copy.store_name</td>
-                            <td>@copy.street_address @copy.suburb @copy.postcode</td>
-                            <td>@copy.phone</td>
-                            <td>@copy.total_copies</td>
-                            <td>@copy.available_copies</td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
-            </div>
-            
-            <a class="btn align-content-end btn-outline-primary" href="/Movies/Index">Return to Index</a>
+        <div class="card-group">
+            @foreach (var copy in movieCopies)
+            {
+                <div class="card-header">
+                    <h2>@copy.store_name</h2>
+                </div>
+                <div class="card-body">
+                    <p>@copy.street_address @copy.suburb @copy.postcode</p>
+                    <p>@copy.phone</p>
+                    <p>Store copies: @copy.total_copies</p>
+                    <p>Number available: @copy.available_copies</p>
+                </div>
+            }
         </div>
     </div>
+    
+    <a class="btn align-content-end btn-outline-primary" href="/Movies/Index">Return to Index</a>
 }
