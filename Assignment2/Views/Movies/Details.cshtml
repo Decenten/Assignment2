@@ -35,9 +35,12 @@
             genres = db.Query(sqlMovieGenres, queryMovieID);
 
             var sqlMovieStores = "SELECT s.store_id, s.store_name, s.street_address, s.suburb, s.postcode, s.phone, " +
-                                 "COUNT(DISTINCT c.copy_id) FILTER (" +
+                                 "COUNT(DISTINCT c.copy_id) FILTER ( " +
                                  "WHERE c.retired = false " +
                                  ") AS total_copies, " +
+                                 "COUNT(DISTINCT c.copy_id) FILTER ( " +
+                                 "WHERE c.retired = true " +
+                                 ") AS retired_copies, " +
                                  "COUNT(DISTINCT c.copy_ID) FILTER ( " +
                                  "WHERE c.retired = false " +
                                  "AND NOT EXISTS ( " +
@@ -135,19 +138,25 @@ else
                 <p class="fs-5 fst-italic text-end">Rental price: @movie.rental_price.ToString("C")</p>
             </div>
         </div>
-        <p class="mb-2 text-center">Copy Locations</p>
-
-        <div class="card-group">
-            @foreach (var copy in movieCopies)
+        
+        <h2 class="fs-5 mb-2 text-center">Copy Locations</h2>
+        
+        <div class="row row-cols-md-2 g-2">
+        @foreach (var copy in movieCopies)
             {
-                <div class="card-header">
-                    <h2>@copy.store_name</h2>
-                </div>
-                <div class="card-body">
-                    <p>@copy.street_address @copy.suburb @copy.postcode</p>
-                    <p>@copy.phone</p>
-                    <p>Store copies: @copy.total_copies</p>
-                    <p>Number available: @copy.available_copies</p>
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>@copy.store_name</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>@copy.street_address @copy.suburb @copy.postcode</p>
+                            <p>@copy.phone</p>
+                            <p>Store Copies: @copy.total_copies</p>
+                            <p>Copies Available To Rent: @copy.available_copies</p>
+                            <p>Retired Copies: @copy.retired_copies</p>
+                        </div>
+                    </div>
                 </div>
             }
         </div>
