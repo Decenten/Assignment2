@@ -12,6 +12,7 @@
     dynamic actors = null; // Can't set a var initial value to null
     dynamic genres = null;
     dynamic movieCopies = null;
+    dynamic rentalInfo = null;
     var errorMessage = "";
     
     try
@@ -56,11 +57,25 @@
                                  "GROUP BY s.store_id, s.store_name, s.street_address, s.suburb, s.postcode, s.phone " +
                                  "ORDER BY s.store_name";
             movieCopies = db.Query(sqlMovieStores, queryMovieID);
+            
+            var sqlRentalHistory = "SELECT cu.first_name, cu.last_name, ri.rental_id, c.copy_id, r.rental_date, ri.return_date, ri.due_date, ri.late_fee, s.store_name " +
+                                   "FROM customers cu " +
+                                   "JOIN rentals r " +
+                                   "ON r.customer_id = cu.customer_id " +
+                                   "JOIN rental_items ri " +
+                                   "ON ri.rental_id = r.rental_id " +
+                                   "JOIN copies c " +
+                                   "ON c.copy_id = ri.copy_id " +
+                                   "JOIN stores s " +
+                                   "ON c.store_id = s.store_id " +
+                                   "WHERE c.movie_id = CAST(@0 AS INT) " +
+                                   "ORDER BY r.rental_date DESC, s.store_name";
+            rentalInfo = db.Query(sqlRentalHistory, queryMovieID);
         }
     }
     catch (Exception)
     {
-        errorMessage = "Invalid movie id";
+        errorMessage = "Invalid Movie ID";
         movie = null;
     }
 }
@@ -141,13 +156,13 @@ else
         
         <h2 class="fs-5 mb-2 text-center">Copy Locations</h2>
         
-        <div class="row row-cols-md-2 g-2">
-        @foreach (var copy in movieCopies)
+        <div class="row row-cols-2 g-2">
+            @foreach (var copy in movieCopies)
             {
                 <div class="col">
-                    <div class="card">
+                    <div class="card h-100">
                         <div class="card-header">
-                            <h3>@copy.store_name</h3>
+                            <h3 class="fs-5 mb-1">@copy.store_name</h3>
                         </div>
                         <div class="card-body">
                             <p>@copy.street_address @copy.suburb @copy.postcode</p>
@@ -160,7 +175,51 @@ else
                 </div>
             }
         </div>
+        
+        <h2 class="fs-5 mb-2 text-center">Rental Information</h2>
+        
+        @if (rentalInfo.Count == 0)
+        {
+            <div class="alert alert-info">
+                No rental history for this movie
+            </div>
+        }
+        else
+        {
+            <div class="row row-cols-2 g-2">
+                @foreach (var rental in rentalInfo)
+                {
+                    bool isOverdue = rental.return_date == null && rental.due_date < new DateTime(2026, 9, 28); // hard coded for testing, this will be changed for DateTime.Today
+                    
+                    <div class="col">
+                        <div class="card h-100 @(isOverdue ? "bg-danger-subtle" : "")">
+                            <div class="card-header">
+                                <h3 class="fs-5 mb-1">@rental.first_name @rental.last_name</h3>
+                            </div>
+                            <div class="card-body">
+                                <p>Rental ID: @rental.rental_id</p>
+                                <p>Store: @rental.store_name</p>
+                                <p>Copy ID: @rental.copy_id</p>
+                                <p>Date Borrowed: @rental.rental_date.ToString("dd/MM/yyyy")</p>
+                                <p>Due Date: @rental.due_date.ToString("dd/MM/yyyy")</p>
+                                @if (rental.return_date == null)
+                                {
+                                    <p>Returned Date: Not returned</p>
+                                }
+                                else
+                                {
+                                    <p>Returned Date: @rental.return_date.ToString("dd/MM/yyyy")</p>
+                                }
+                                <p>Late Fee: @rental.late_fee.ToString("C")</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
     </div>
     
-    <a class="btn align-content-end btn-outline-primary" href="/Movies/Index">Return to Index</a>
+    <div class="d-flex justify-content-center mt-4">
+        <a class="btn align-content-end btn-outline-primary" href="/Movies/Index">Return to Index</a>
+    </div>
 }
