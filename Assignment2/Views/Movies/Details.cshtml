@@ -6,50 +6,79 @@
 
 @{
     var db = Database.Open("dvdRental");
-
-    var sql = "SELECT * FROM movies WHERE movie_id = CAST(@0 AS INT)";
+    
     var queryMovieID = Request.QueryString["id"];
-    var movie = db.QuerySingle(sql, queryMovieID);
+    dynamic movie = null;
+    dynamic actors = null; // Can't set a var initial value to null
+    dynamic genres = null;
+    dynamic movieCopies = null;
+    var errorMessage = "";
+    
+    try
+    {
+        var sql = "SELECT * FROM movies WHERE movie_id = CAST(@0 AS INT)";
 
+        movie = db.QuerySingle(sql, queryMovieID);
 
-    var sqlMovieActors = "SELECT * " +
-                         "FROM actors a, movie_actors ma " +
-                         "WHERE ma.movie_ID = CAST(@0 AS INT) " +
-                         "AND a.actor_id = ma.actor_id";
-    var actors = db.Query(sqlMovieActors, queryMovieID);
+        if (movie != null)
+        {
+            var sqlMovieActors = "SELECT * " +
+                                 "FROM actors a, movie_actors ma " +
+                                 "WHERE ma.movie_ID = CAST(@0 AS INT) " +
+                                 "AND a.actor_id = ma.actor_id";
+            actors = db.Query(sqlMovieActors, queryMovieID);
 
-    var sqlMovieGenres = "SELECT * " +
-                         "FROM genres g, movie_genres ma " +
-                         "WHERE ma.movie_ID = CAST(@0 AS INT) " +
-                         "AND g.genre_id = ma.genre_id";
-    var genres = db.Query(sqlMovieGenres, queryMovieID);
+            var sqlMovieGenres = "SELECT * " +
+                                 "FROM genres g, movie_genres ma " +
+                                 "WHERE ma.movie_ID = CAST(@0 AS INT) " +
+                                 "AND g.genre_id = ma.genre_id";
+            genres = db.Query(sqlMovieGenres, queryMovieID);
 
-    var sqlMovieStores = "SELECT s.store_id, s.store_name, s.street_address, s.suburb, s.postcode, s.phone, " +
-                         "COUNT(DISTINCT c.copy_id) FILTER (" +
-                         "WHERE c.retired = false" +
-                         ") AS total_copies, " +
-                         "COUNT(DISTINCT c.copy_ID) FILTER ( " +
-                         "WHERE c.retired = false " +
-                         "AND NOT EXISTS ( " +
-                         "SELECT 1 " +
-                         "FROM rental_items ri " +
-                         "WHERE ri.copy_id = c.copy_id " +
-                         "AND ri.return_date IS NULL ) " +
-                         ") AS available_copies " +
-                         "FROM copies c " +
-                         "JOIN stores s " +
-                         "ON c.store_id = s.store_id " +
-                         "WHERE c.movie_id = CAST(@0 AS INT) " +
-                         "GROUP BY s.store_id, s.store_name, s.street_address, s.suburb, s.postcode, s.phone " +
-                         "ORDER BY s.store_name";
-    var movieCopies = db.Query(sqlMovieStores, queryMovieID);
+            var sqlMovieStores = "SELECT s.store_id, s.store_name, s.street_address, s.suburb, s.postcode, s.phone, " +
+                                 "COUNT(DISTINCT c.copy_id) FILTER (" +
+                                 "WHERE c.retired = false" +
+                                 ") AS total_copies, " +
+                                 "COUNT(DISTINCT c.copy_ID) FILTER ( " +
+                                 "WHERE c.retired = false " +
+                                 "AND NOT EXISTS ( " +
+                                 "SELECT 1 " +
+                                 "FROM rental_items ri " +
+                                 "WHERE ri.copy_id = c.copy_id " +
+                                 "AND ri.return_date IS NULL ) " +
+                                 ") AS available_copies " +
+                                 "FROM copies c " +
+                                 "JOIN stores s " +
+                                 "ON c.store_id = s.store_id " +
+                                 "WHERE c.movie_id = CAST(@0 AS INT) " +
+                                 "GROUP BY s.store_id, s.store_name, s.street_address, s.suburb, s.postcode, s.phone " +
+                                 "ORDER BY s.store_name";
+            movieCopies = db.Query(sqlMovieStores, queryMovieID);
+        }
+    }
+    catch (Exception)
+    {
+        errorMessage = "Invalid movie id";
+        movie = null;
+    }
 }
 
 @if (movie == null){
     <div class="alert alert-danger">
-        Movie not found
+        @if (errorMessage == "")
+        {
+            <span>Movie not found</span>
+        }
+        else
+        {
+            @errorMessage
+        }
     </div>
-} else {
+    <a href="/Movies/Index" class="btn btn-primary">
+        Return to Movies Index
+    </a>
+} 
+else 
+{
     <div class="row g-4">
         <div class="col-md-4">
             <img src="/Images/@movie.poster_filename" class="img-fluid" alt="@movie.title">
