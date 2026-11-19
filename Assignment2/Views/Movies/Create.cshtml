@@ -39,7 +39,7 @@
             // with an actor selected
             foreach (var actor in Request.Form["movieActors"].ToString().Split(','))
             {
-                var movieGenreInsert = db.Execute(movieActorsSql, newMovieID, actor, "Placeholder Character Name");
+                var movieActorInsert = db.Execute(movieActorsSql, newMovieID, actor, "Placeholder Character Name");
             }
             
             Response.Redirect("Details?id=" + newMovieID);
