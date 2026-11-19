@@ -7,6 +7,9 @@
 @{
     var db = Database.Open("dvdRental");
 
+    var genreSql = "SELECT genre_id, genre_name FROM genres ORDER BY genre_name";
+    var genres = db.Query(genreSql);
+    
     try
     {
         if (IsPost)
@@ -18,6 +21,14 @@
                 Request.Form["release_year"], Request.Form["classification"],
                 Request.Form["rental_price"], Request.Form["description"],
                 Request.Form["poster_filename"], Request.Form["runtime_minutes"]);
+            
+            var movieGenresSql = "INSERT INTO movie_genres (movie_id, genre_id) VALUES (CAST(@0 AS INT), CAST(@1 AS INT))";
+
+            foreach (var genre in Request.Form["movieGenres"].ToString().Split(','))
+            {
+                var movieGenreInsert = db.Execute(movieGenresSql, newMovieID, genre);
+            }
+            
             Response.Redirect("Details?id=" + newMovieID);
             return;
         }
@@ -64,6 +75,19 @@
                     <option value="R18+">R18+</option>
                 </select>
             </div>
+            
+            <div class="row form-group mb-3">
+                <label for="movieGenres" class="form-label">Movie Genres</label>
+                <select id="movieGenres" name="movieGenres" class="form-select" multiple size="5">
+                    @foreach (var genre in genres)
+                    {
+                        <option value="@genre.genre_id">@genre.genre_name</option>
+                    }
+                </select>
+                <div class="form-text">
+                    Hold Ctrl to select multiple genres
+                </div>
+            </div>
 
             <div class="row form-group mb-3">
                 <label for="runtime_minutes" class="form-label">Runtime Minutes</label>
@@ -76,6 +100,7 @@
                 <textarea id="description" name="description" maxlength="5000" class="form-control"
                     placeholder="Movie description..." title="Movie Description" rows="5" required></textarea>
             </div>
+            
         </div>
     </div>
 
