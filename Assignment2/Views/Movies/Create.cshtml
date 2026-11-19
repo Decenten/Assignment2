@@ -1,0 +1,64 @@
+﻿@using WebMatrix.Data
+
+@{
+    ViewBag.Title = "Create Page";
+}
+
+
+<h1 class="text-center">Create New Rental Movie</h1>
+
+<form method="post" action="/Movies/Create">
+    <div class="row form-group mb-3">
+        <label for="title" class="form-label">Movie Title</label>
+        <input type="text" id="title" name="title" class="form-control" 
+               placeholder="Movie title..." maxlength="200" required>
+    </div>
+    
+    <div class="row form-group mb-3">
+        <label class="form-label" for="release_year">Release Year</label>
+        <input type="number" id="release_year" name="release_year" class="form-control" 
+               min="1900" max="2040" step="1" required>
+    </div>
+    
+    <div class="row form-group mb-3">
+        <label for="classification" class="form-label">Select Classification</label>
+        <select id="classification" name="classification" class="form-select" required>
+            <option value="" selectd disabled>Select Classification</option>
+            <option value="G">G</option>
+            <option value="PG">PG</option>
+            <option value="M">M</option>
+            <option value="MA15+">MA15+</option>
+            <option value="R18+">R18+</option>
+        </select>
+    </div>
+    
+    <div class="row form-group mb-3">
+        <label for="runtime_minutes" class="form-label">Runtime Minutes</label>
+        <input type="number" id="runtime_minutes" name="runtime_minutes" class="form-control" 
+               placeholder="Movie runtime in minutes..." step="1" min="1" max="1000" required>
+    </div>
+    
+    <div class="row form-group mb-3">
+        <label for="rental_price" class="form-label">Rental Price ($)</label>
+        <input type="number" id="rental_price" class="form-control" name="rental_price"
+               step="0.05" min="1" max="100" placeholder="$0.00">
+    </div>
+    
+    <div class="row form-group mb-3">
+        <label for="description" class="form-label">Movie Description</label>
+        <textarea id="description" name="description" maxlength="5000" class="form-control"
+                    placeholder="Movie description..." title="Movie Description" rows="5"></textarea>
+    </div>
+    
+    <div class="row form-group mb-3">
+        <label for="poster_filename" class="form-label">Poster File Name</label>
+        <input type="text" name="poster_filename" id="poster_filename" class="form-control"
+               placeholder="Movie poster file name... e.g. cold_storage.jpg" 
+               title="Poster File Name" maxlength="250" required>
+    </div>
+    
+    <div class="row form-group mb-3">
+        <button type="submit" name="action" value="insert" class="btn btn-primary">Create Movie</button>
+    </div>
+    
+</form>
