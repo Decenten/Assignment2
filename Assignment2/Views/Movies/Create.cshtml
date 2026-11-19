@@ -10,6 +10,9 @@
     var genreSql = "SELECT genre_id, genre_name FROM genres ORDER BY genre_name";
     var genres = db.Query(genreSql);
     
+    var actorSql = "SELECT actor_id, first_name, last_name FROM actors ORDER BY last_name, first_name";
+    var actors = db.Query(actorSql);
+    
     try
     {
         if (IsPost)
@@ -27,6 +30,16 @@
             foreach (var genre in Request.Form["movieGenres"].ToString().Split(','))
             {
                 var movieGenreInsert = db.Execute(movieGenresSql, newMovieID, genre);
+            }
+            
+            var movieActorsSql = "INSERT INTO movie_actors (movie_id, actor_id, character_name) VALUES (CAST(@0 AS INT), CAST(@1 AS INT), @2)";
+            
+            // Using placeholder text as will need to look further into how to implement adding character
+            // name for user to input when selecting an actor but this does correctly associate each movie
+            // with an actor selected
+            foreach (var actor in Request.Form["movieActors"].ToString().Split(','))
+            {
+                var movieGenreInsert = db.Execute(movieActorsSql, newMovieID, actor, "Placeholder Character Name");
             }
             
             Response.Redirect("Details?id=" + newMovieID);
@@ -82,6 +95,19 @@
                     @foreach (var genre in genres)
                     {
                         <option value="@genre.genre_id">@genre.genre_name</option>
+                    }
+                </select>
+                <div class="form-text">
+                    Hold Ctrl to select multiple genres
+                </div>
+            </div>
+            
+            <div class="row form-group mb-3">
+                <label for="movieActors" class="form-label">Movie Actors</label>
+                <select id="movieActors" name="movieActors" class="form-select" multiple size="5">
+                    @foreach (var actor in actors)
+                    {
+                        <option value="@actor.actor_id">@actor.first_name @actor.last_name</option>
                     }
                 </select>
                 <div class="form-text">
