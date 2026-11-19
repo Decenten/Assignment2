@@ -27,21 +27,27 @@
             
             var movieGenresSql = "INSERT INTO movie_genres (movie_id, genre_id) VALUES (CAST(@0 AS INT), CAST(@1 AS INT))";
 
-            foreach (var genre in Request.Form["movieGenres"].ToString().Split(','))
+            if (Request.Form["movieGenres"] != "[]")
             {
-                var movieGenreInsert = db.Execute(movieGenresSql, newMovieID, genre);
+                foreach (var genre in Request.Form["movieGenres"].ToString().Split(','))
+                {
+                    var movieGenreInsert = db.Execute(movieGenresSql, newMovieID, genre);
+                }
             }
-            
+
             var movieActorsSql = "INSERT INTO movie_actors (movie_id, actor_id, character_name) VALUES (CAST(@0 AS INT), CAST(@1 AS INT), @2)";
-            
-            // Using placeholder text as will need to look further into how to implement adding character
-            // name for user to input when selecting an actor but this does correctly associate each movie
-            // with an actor selected
-            foreach (var actor in Request.Form["movieActors"].ToString().Split(','))
+
+            if (Request.Form["movieActors"] != "[]")
             {
-                var movieActorInsert = db.Execute(movieActorsSql, newMovieID, actor, "Placeholder Character Name");
+                // Using placeholder text as will need to look further into how to implement adding character
+                // name for user to input when selecting an actor but this does correctly associate each movie
+                // with an actor selected
+                foreach (var actor in Request.Form["movieActors"].ToString().Split(','))
+                {
+                    var movieActorInsert = db.Execute(movieActorsSql, newMovieID, actor, "Placeholder Character Name");
+                }
             }
-            
+
             Response.Redirect("Details?id=" + newMovieID);
             return;
         }
